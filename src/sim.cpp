@@ -70,6 +70,8 @@ Instruction simDecode(Instruction inst) {
     inst.funct3 = inst.instruction >> 12 & 0b111;
     inst.rd = inst.instruction >> 7 & 0b11111;
     inst.rs1 = inst.instruction >> 15 & 0b11111;
+    inst.rs2 = inst.instruction >> 20 & 0b11111;
+    inst.branchAddr = inst.instruction >> 25 & inst.instruction;
 
     inst.isLegal = true; // assume legal unless proven otherwise
 
@@ -104,14 +106,69 @@ Instruction simDecode(Instruction inst) {
 Instruction simOperandCollection(Instruction inst, REGS regData) {
 
     inst.op1Val = regData.registers[inst.rs1];
+    inst.op2Val = regData.registers[inst.rs2];
 
     return inst;
 }
 
 // Resolve the next PC: PC + 4, or a branch/jump target
 Instruction simNextPCResolution(Instruction inst) {
-
-    inst.nextPC = inst.PC + 4;
+    if (inst.opcode == OP_SB || inst.opcode == OP_I || inst.opcode == OP_UJ) {
+        switch (inst.funct3) {
+            case FUNCT3_BEQ:
+                if (inst.rs1 == inst.rs2) {
+                    inst.nextPC = inst.PC + inst.imm;
+                }
+                else inst.nextPC = inst.PC;
+                break;
+            case FUNCT3_BGE:
+                if (inst.rs1 >= inst.rs2) {
+                    inst.nextPC = inst.PC + inst.imm;
+                }
+                else inst.nextPC = inst.PC;
+                break;
+            case FUNCT3_BLT:
+                if (inst.rs1 < inst.rs2) {
+                    inst.nextPC = inst.PC + inst.imm;
+                }
+                else inst.nextPC = inst.PC;
+                break;
+            case FUNCT3_BNE:
+                if (inst.rs1 != inst.rs2) {
+                    inst.nextPC = inst.PC + inst.imm;
+                }
+                else inst.nextPC = inst.PC;
+                break;
+            case FUNCT3_BLTU:
+                if (inst.rs1 < inst.rs2) {
+                    inst.nextPC = inst.PC + inst.imm;
+                }
+                else inst.nextPC = inst.PC;
+                break;
+            case FUNCT3_BGEU:
+                if (inst.rs1 >= inst.rs2) {
+                    inst.nextPC = inst.PC + inst.imm;
+                }
+                else inst.nextPC = inst.PC;
+                break;
+            case FUNCT3_BGEU:
+                if (inst.rs1 >= inst.rs2) {
+                    inst.nextPC = inst.PC + inst.imm;
+                }
+                else inst.nextPC = inst.PC;
+                break;
+            case FUNCT3_BGEU:
+                if (inst.rs1 >= inst.rs2) {
+                    inst.nextPC = inst.PC + inst.imm;
+                }
+                else inst.nextPC = inst.PC;
+                break;
+            //  need to implement jump instructions!!!!!!!!!!!!!!!!!!!!!!!!!!!! just jal and jalr
+        }
+    }
+    else {
+        inst.nextPC = inst.PC + 4;
+    }
 
     return inst;
 }
@@ -129,11 +186,90 @@ Instruction simArithLogic(Instruction inst) {
 
 // Generate the memory address for load/store instructions
 Instruction simAddrGen(Instruction inst) {
+    inst.memAddress = inst.op1Val + inst.imm;
     return inst;
 }
 
 // Perform the memory access for load/store instructions
 Instruction simMemAccess(Instruction inst, MemoryStore *myMem) {
+if (inst.opcode == OP_LOAD) {
+    switch (inst.funct3) {
+        case FUNCT3_LB_SB:
+            byte = myMem[inst.memAddress];
+            registers[inst.rd] = byte;
+            break;
+        case FUNCT3_LH_SH:
+            halfword = myMem[inst.memAddress] |
+            myMem[inst.memAddress] << 8 ;
+            registers[inst.rd] = halfword;
+            break;
+        case FUNCT3_LW_SW:
+            word = myMem[inst.memAddress] |
+                myMem[inst.memAddress+1] << 8 |
+                myMem[inst.memAddress+2] << 16 |
+                myMem[inst.memAddress+3] << 24 |
+                myMem[inst.memAddress+4] << 32 |
+            registers[inst.rd] = word;
+            break;
+        case FUNCT3_LD:
+            doubleword = myMem[inst.memAddress] |
+                myMem[inst.memAddress+1] << 8 |
+                myMem[inst.memAddress+2] << 16 |
+                myMem[inst.memAddress+3] << 24 |
+                myMem[inst.memAddress+4] << 32 |
+                myMem[inst.memAddress+5] << 40 |
+                myMem[inst.memAddress+6] << 48 |
+                myMem[inst.memAddress+7] << 56 |
+                myMem[inst.memAddress+8] << 64;
+            registers[inst.rd] = doubleword;
+            break;
+        case FUNCT3_LBU:
+
+        case FUNCT3_LHU:
+            doubleword = myMem->registers[inst.memAddress];
+            registers[inst.rd] = doubleword;
+            break;
+        case FUNCT3_LWU:
+            doubleword = myMem->registers[inst.memAddress];
+            registers[inst.rd] = doubleword;
+            break;
+    }
+    if (inst.opcode == OP_STORE) {
+        switch (inst.funct3) {
+            case FUNCT3_LB_SB:
+                byte = myMem->registers[inst.memAddress];
+                registers[inst.rd] = byte;
+                break;
+            case FUNCT3_LH_SH:
+                halfword = myMem->registers[inst.memAddress] |
+                myMem->registers[inst.memAddress+1] << 8 ;
+                registers[inst.rd] = halfword;
+                break;
+            case FUNCT3_LW_SW:
+                word = myMem[inst.memAddress] |
+                myMem[inst.memAddress+1] << 8 |
+                myMem[inst.memAddress+2] << 16 |
+                myMem[inst.memAddress+3] << 24 |
+                myMem[inst.memAddress+4] << 32 |
+                registers[inst.rd] = word;
+                break;
+            case FUNCT3_LD_SD:
+                doubleword = myMem[inst.memAddress] |
+                myMem[inst.memAddress+1] << 8 |
+                myMem[inst.memAddress+2] << 16 |
+                myMem[inst.memAddress+3] << 24 |
+                myMem[inst.memAddress+4] << 32 |
+                myMem[inst.memAddress+5] << 40 |
+                myMem[inst.memAddress+6] << 48 |
+                myMem[inst.memAddress+7] << 56 |
+                myMem[inst.memAddress+8] << 64;
+                registers[inst.rd] = doubleword;
+                break;
+        }
+        }
+    }
+    }
+}
     return inst;
 }
 

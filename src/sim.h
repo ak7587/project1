@@ -32,18 +32,40 @@ uint64_t PC;
 enum OPCODES {
     // I-type opcodes
     OP_INTIMM  = 0b0010011, // Integer ALU immediate instructions addi, slli, slti, sltiu, xori, srli, srai, ori, andi
+    OP_LOAD = 0b0000011, // for instructions lb, lh, lw, ld, lbu, lhu, lwu
+    OP_STORE = 0b0100011, // for instructions sb, sh, sw, sd
+    OP_RINT = 0b0100111, // for instructions add, sub, sli, slt, sltu, xor, srl, sra, or, and
+    OP_LUI = 0b0110111, // lui
+    OP_RW = 0b0111011, // addw, subw, sllw, srlw, sraw
+    OP_SB = 0b1100011, // bew, bne, blt, bge, bltu, bgeu
+    OP_I = 0b1100111, // jalr
+    OP_UJ = 0b1101111, //jal
     // ...
 };
 
 enum FUNCT3 {
     // For integer ALU instructions
     FUNCT3_ADD  = 0b000, // add
+    FUNCT3_BEQ  = 0b000,
+    FUNCT3_BNE  = 0b001,
+    FUNCT3_BLT  = 0b100,
+    FUNCT3_BGE  = 0b101,
+    FUNCT3_BLTU = 0b110,
+    FUNCT3_BGEU = 0b111,
+    FUNCT3_LB_SB = 0b000,
+    FUNCT3_LH_SH = 0b001,
+    FUNCT3_LW_SW = 0b010,
+    FUNCT3_LD_SD = 0b011,
+    FUNCT3_LBU = 0b100,
+    FUNCT3_LHU = 0b101,
+    FUNCT3_LWU = 0b110,
     // ...
 };
 
 enum RI_FUNCT7 {
     // For R-type add/sub instructions
-    FUNCT7_ADD     = 0b0000000, // add
+    FUNCT7_ADD     = 0b00000000, // add
+    FUNCT7_SUB     = 0b01000000, // sub, sraw, subw, sraw
     // ...
 };
 
@@ -51,8 +73,15 @@ enum RI_FUNCT7 {
 // Bit-level manipulation helpers
 // --------------------------------------------------------------------------
 
+
 // TODO: You may wish to declare some helper functions for bit extraction
 // and sign extension
+
+    /// idrkkk where to put these but makes memory stuff easier
+    uint8_t word = 0,
+   uint16_t halfword = 0m
+   uint32_t word = 0,
+   uint32_t double_word = 0;
 
 // --------------------------------------------------------------------------
 // Utilities
@@ -93,6 +122,9 @@ struct Instruction {
     uint64_t rs2 = 0;
 
     uint64_t nextPC = 0;
+    uint64_t branchAddr = 0;
+    uint64_t imm = 0;
+    uint64_t imm_jal = 0;
 
     uint64_t op1Val = 0;
     uint64_t op2Val = 0;
