@@ -73,13 +73,17 @@ Instruction simDecode(Instruction inst) {
     inst.rs2 = inst.instruction >> 20 & 0b11111;
     inst.funct7 = inst.instruction >> 25 & 0b1111111;
     inst.branchAddr = inst.instruction >> 25 & inst.instruction;
+
+    //unsigned immediates
     uint64_t imm_I = inst.instruction >> 20 & 0b111111111111;
     uint64_t imm_UJ = (((inst.instruction >> 31 & 0b1) << 10 | (inst.instruction >> 12 & 0b1111111111)) << 1 | (inst.instruction >> 22 & 0b1)) << 8 | (inst.instruction >> 23 & 0b11111111)
     uint64_t imm_SB = (((inst.instruction >> 31 & 0b1) << 1 | (inst.instruction >> 7 & 0b1)) << 6 | (inst.instruction >> 25 & 0b111111)) << 4 | (inst.instruction >> 8 & 0b1111);
+    
     // Sign-extend the immediate values & shift the branch/jump immediates to the left by 1 bit
     inst.imm_SB = ((imm_SB & 0x800) ? (imm_SB | 0xFFFFFFFFFFFFF000) : imm_SB) << 1;
     inst.imm_I = (imm_I & 0x800) ? (imm_I | 0xFFFFFFFFFFFFF000) : imm_I;
     inst.imm_UJ = ((imm_UJ & 0x80000) ? (imm_UJ | 0xFFFFFFFFFFF00000) : imm_UJ) << 1;
+   
     inst.isLegal = true; // assume legal unless proven otherwise
 
     if (inst.instruction == 0xfeedfeed) {
@@ -181,10 +185,47 @@ Instruction simNextPCResolution(Instruction inst) {
 
 // Perform arithmetic/logic operations
 Instruction simArithLogic(Instruction inst) {
+    if (inst.opcode == OP_RINT) {
+        switch (inst.funct3) {
+            case FUNCT3_ADD:
+                if (inst.funct7 == FUNCT7_SUB) {
+                    inst.arithResult = inst.op1Val - inst.op2Val;
+                } else {
+                    inst.arithResult = inst.op1Val + inst.op2Val;
+                }
+                break;
+            case FUNCT3_SLL:
+                inst.arithResult = inst.op1Val << (inst.op2Val & 0x1F);
+                break;
+            case FUNCT3_SRL:
+                // For SRL and SRA, we need to check the funct7 field to determine if it's a logical or arithmetic shift
+                if (inst.funct7 == FUNCT7_SUB) {
+                    inst.arithResult = ((int64_t)inst.op1Val) >> (inst.op2Val & 0x1F);
+                } else {
+                    inst.arithResult = inst.op1Val >> (inst.op2Val & 0x1F);
+                }
+                break;
+            case FUNCT3_AND:
+                inst.arithResult = inst.op1Val & inst.op2Val;
+                break;
+            case FUNCT3_OR:
+                inst.arithResult = inst.op1Val | inst.op2Val;
+                break;
+            case FUNCT3_XOR:
+                inst.arithResult = inst.op1Val ^ inst.op2Val;
+                break;
+            case FUNCT3_SLT:
+                inst.arithResult = ((int64_t)inst.op1Val < (int64_t)inst.op2Val) ? 1 : 0;
+                break;
+            case FUNCT3_SLTU:
+                inst.arithResult = (inst.op1Val < inst.op2Val) ? 1 : 0;
+                break;
+        }
+    }
+    
     // Only ADDI is implemented; handle the other opcodes here
     uint64_t imm12  = inst.instruction >> 20 & 0b111111111111;
     uint64_t sext_imm12 = (imm12 & 0x800) ? (imm12 | 0xFFFFFFFFFFFFF000) : imm12;
-
     inst.arithResult = inst.op1Val + sext_imm12;
 
     return inst;

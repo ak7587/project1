@@ -65,7 +65,7 @@ enum FUNCT3 {
 enum RI_FUNCT7 {
     // For R-type add/sub instructions
     FUNCT7_ADD     = 0b00000000, // add
-    FUNCT7_SUB     = 0b01000000, // sub, sraw, subw, sraw
+    FUNCT7_SUB     = 0b01000000, // sub, sra, subw, sraw
     // ...
 };
 
