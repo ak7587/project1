@@ -12,6 +12,9 @@ using namespace std;
 // U  type: | imm[31:12]                        | rd          | opcode |
 // UJ type: | imm[20|10:1|11|19:12]             | rd          | opcode |
 
+uint64_t sign_extend_32(uint64_t val) {
+    return static_cast<int64_t>(static_cast<int32_t>(val));
+
 // Initialize memory with the program binary
 bool initMemory(char *programFile, MemoryStore *myMem) {
     // Open the instruction file
