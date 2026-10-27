@@ -71,7 +71,11 @@ Instruction simDecode(Instruction inst) {
     inst.rd = inst.instruction >> 7 & 0b11111;
     inst.rs1 = inst.instruction >> 15 & 0b11111;
     inst.rs2 = inst.instruction >> 20 & 0b11111;
+    inst.funct7 = inst.instruction >> 25 & 0b1111111;
     inst.branchAddr = inst.instruction >> 25 & inst.instruction;
+    inst.imm_SB = (((inst.instruction >> 31 & 0b1) << 1 | (inst.instruction >> 7 & 0b1)) << 6 | (inst.instruction >> 25 & 0b111111)) << 4 | (inst.instruction >> 8 & 0b1111);
+    inst.imm_I = inst.instruction >> 20 & 0b111111111111;
+    inst.imm_UJ = (((inst.instruction >> 31 & 0b1) << 10 | (inst.instruction >> 12 & 0b1111111111)) << 1 | (inst.instruction >> 22 & 0b1)) << 8 | (inst.instruction >> 23 & 0b11111111)
 
     inst.isLegal = true; // assume legal unless proven otherwise
 
@@ -114,56 +118,67 @@ Instruction simOperandCollection(Instruction inst, REGS regData) {
 // Resolve the next PC: PC + 4, or a branch/jump target
 Instruction simNextPCResolution(Instruction inst) {
     if (inst.opcode == OP_SB || inst.opcode == OP_I || inst.opcode == OP_UJ) {
-        switch (inst.funct3) {
-            case FUNCT3_BEQ:
-                if (inst.rs1 == inst.rs2) {
-                    inst.nextPC = inst.PC + inst.imm;
-                }
-                else inst.nextPC = inst.PC;
+        switch (inst.opcode) {
+            case OP_I:
+                registers[inst.rd] = inst.PC + 4;
+                inst.nextPC = inst.op1Val + inst.imm_I;
                 break;
-            case FUNCT3_BGE:
-                if (inst.rs1 >= inst.rs2) {
-                    inst.nextPC = inst.PC + inst.imm;
-                }
-                else inst.nextPC = inst.PC;
+            case OP_UJ:
+                registers[inst.rd] = inst.PC + 4;
+                inst.nextPC = inst.PC + (inst.imm_UJ << 1);
                 break;
-            case FUNCT3_BLT:
-                if (inst.rs1 < inst.rs2) {
-                    inst.nextPC = inst.PC + inst.imm;
+            case OP_SB:
+                switch (inst.funct3) {
+                    case FUNCT3_BEQ:
+                        if (inst.rs1 == inst.rs2) {
+                            inst.nextPC = inst.PC + inst.imm_SB;
+                        }
+                        else inst.nextPC = inst.PC;
+                        break;
+                    case FUNCT3_BGE:
+                        if (inst.rs1 >= inst.rs2) {
+                            inst.nextPC = inst.PC + inst.imm_SB;
+                        }
+                        else inst.nextPC = inst.PC;
+                        break;
+                    case FUNCT3_BLT:
+                        if (inst.rs1 < inst.rs2) {
+                            inst.nextPC = inst.PC + inst.imm_SB;
+                        }
+                        else inst.nextPC = inst.PC;
+                        break;
+                    case FUNCT3_BNE:
+                        if (inst.rs1 != inst.rs2) {
+                            inst.nextPC = inst.PC + inst.imm_SB;
+                        }
+                        else inst.nextPC = inst.PC;
+                        break;
+                    case FUNCT3_BLTU:
+                        if (inst.rs1 < inst.rs2) {
+                            inst.nextPC = inst.PC + inst.imm_SB;
+                        }
+                        else inst.nextPC = inst.PC;
+                        break;
+                    case FUNCT3_BGEU:
+                        if (inst.rs1 >= inst.rs2) {
+                            inst.nextPC = inst.PC + inst.imm_SB;
+                        }
+                        else inst.nextPC = inst.PC;
+                        break;
+                    case FUNCT3_BGEU:
+                        if (inst.rs1 >= inst.rs2) {
+                            inst.nextPC = inst.PC + inst.imm_SB;
+                        }
+                        else inst.nextPC = inst.PC;
+                        break;
+                    case FUNCT3_BGEU:
+                        if (inst.rs1 >= inst.rs2) {
+                            inst.nextPC = inst.PC + inst.imm_SB;
+                        }
+                        else inst.nextPC = inst.PC;
+                        break;
                 }
-                else inst.nextPC = inst.PC;
                 break;
-            case FUNCT3_BNE:
-                if (inst.rs1 != inst.rs2) {
-                    inst.nextPC = inst.PC + inst.imm;
-                }
-                else inst.nextPC = inst.PC;
-                break;
-            case FUNCT3_BLTU:
-                if (inst.rs1 < inst.rs2) {
-                    inst.nextPC = inst.PC + inst.imm;
-                }
-                else inst.nextPC = inst.PC;
-                break;
-            case FUNCT3_BGEU:
-                if (inst.rs1 >= inst.rs2) {
-                    inst.nextPC = inst.PC + inst.imm;
-                }
-                else inst.nextPC = inst.PC;
-                break;
-            case FUNCT3_BGEU:
-                if (inst.rs1 >= inst.rs2) {
-                    inst.nextPC = inst.PC + inst.imm;
-                }
-                else inst.nextPC = inst.PC;
-                break;
-            case FUNCT3_BGEU:
-                if (inst.rs1 >= inst.rs2) {
-                    inst.nextPC = inst.PC + inst.imm;
-                }
-                else inst.nextPC = inst.PC;
-                break;
-            //  need to implement jump instructions!!!!!!!!!!!!!!!!!!!!!!!!!!!! just jal and jalr
         }
     }
     else {

@@ -123,8 +123,9 @@ struct Instruction {
 
     uint64_t nextPC = 0;
     uint64_t branchAddr = 0;
-    uint64_t imm = 0;
-    uint64_t imm_jal = 0;
+    uint64_t imm_I = 0;
+    uint64_t imm_UJ = 0;
+    uint64_t imm_SB = 0;
 
     uint64_t op1Val = 0;
     uint64_t op2Val = 0;
