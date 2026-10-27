@@ -76,7 +76,7 @@ Instruction simDecode(Instruction inst) {
 
     //unsigned immediates
     uint64_t imm_I = inst.instruction >> 20 & 0b111111111111;
-    uint64_t imm_UJ = (((inst.instruction >> 31 & 0b1) << 10 | (inst.instruction >> 12 & 0b1111111111)) << 1 | (inst.instruction >> 22 & 0b1)) << 8 | (inst.instruction >> 23 & 0b11111111)
+    uint64_t imm_UJ = (((inst.instruction >> 31 & 0b1) << 10 | (inst.instruction >> 12 & 0b1111111111)) << 1 | (inst.instruction >> 22 & 0b1)) << 8 | (inst.instruction >> 23 & 0b11111111);
     uint64_t imm_SB = (((inst.instruction >> 31 & 0b1) << 1 | (inst.instruction >> 7 & 0b1)) << 6 | (inst.instruction >> 25 & 0b111111)) << 4 | (inst.instruction >> 8 & 0b1111);
     
     // Sign-extend the immediate values & shift the branch/jump immediates to the left by 1 bit
@@ -195,14 +195,14 @@ Instruction simArithLogic(Instruction inst) {
                 }
                 break;
             case FUNCT3_SLL:
-                inst.arithResult = inst.op1Val << (inst.op2Val & 0x1F);
+                inst.arithResult = inst.op1Val << (inst.op2Val & 0x3F);
                 break;
             case FUNCT3_SRL:
                 // For SRL and SRA, we need to check the funct7 field to determine if it's a logical or arithmetic shift
                 if (inst.funct7 == FUNCT7_SUB) {
-                    inst.arithResult = ((int64_t)inst.op1Val) >> (inst.op2Val & 0x1F);
+                    inst.arithResult = ((int64_t)inst.op1Val) >> (inst.op2Val & 0x3F);
                 } else {
-                    inst.arithResult = inst.op1Val >> (inst.op2Val & 0x1F);
+                    inst.arithResult = inst.op1Val >> (inst.op2Val & 0x3F);
                 }
                 break;
             case FUNCT3_AND:
@@ -223,7 +223,34 @@ Instruction simArithLogic(Instruction inst) {
         }
     } else if (inst.opcode == OP_INTIMM) {
         switch (inst.funct3) {
-            case FUNCT3_ADD
+            case FUNCT3_ADDI:
+                inst.arithResult = inst.op1Val + inst.imm_I;
+                break;
+            case FUNCT3_SLLI:
+                inst.arithResult = inst.op1Val << (inst.imm_I & 0x3F);
+                break;
+            case FUNCT3_SLTI:
+                inst.arithResult = ((int64_t)inst.op1Val < (int64_t)inst.imm_I) ? 1 : 0;
+                break;
+            case FUNCT3_SLTIU:
+                inst.arithResult = (inst.op1Val < inst.imm_I) ? 1 : 0;
+                break;
+            case FUNCT3_XORI:
+                inst.arithResult = inst.op1Val ^ inst.imm_I;
+                break;
+            case FUNCT3_SRLI:
+                if (inst.funct7 == FUNCT7_SRAI) {
+                    inst.arithResult = ((int64_t)inst.op1Val) >> (inst.imm_I & 0x3F);
+                } else {
+                    inst.arithResult = inst.op1Val >> (inst.imm_I & 0x3F);
+                }
+                break;
+            case FUNCT3_ORI:
+                inst.arithResult = inst.op1Val | inst.imm_I;
+                break;
+            case FUNCT3_ANDI:
+                inst.arithResult = inst.op1Val & inst.imm_I;
+                break;
         }
     }
     
