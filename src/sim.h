@@ -59,13 +59,24 @@ enum FUNCT3 {
     FUNCT3_LBU = 0b100,
     FUNCT3_LHU = 0b101,
     FUNCT3_LWU = 0b110,
+    FUNCT3_ADDI = 0b000,
+    FUNCT3_SLLI = 0b001,
+    FUNCT3_SLTI = 0b010,
+    FUNCT3_SLTIU = 0b011,
+    FUNCT3_XORI = 0b100,
+    FUNCT3_SRLI = 0b101,
+    FUNCT3_SRAI = 0b101,
+    FUNCT3_ORI = 0b110,
+    FUNCT3_ANDI = 0b111
     // ...
 };
 
 enum RI_FUNCT7 {
     // For R-type add/sub instructions
-    FUNCT7_ADD     = 0b00000000, // add
-    FUNCT7_SUB     = 0b01000000, // sub, sra, subw, sraw
+    FUNCT7_ADD     = 0b0000000, // add
+    FUNCT7_SUB     = 0b0100000, // sub, subw
+    FUNCT7_SRLI    = 0b0000000, // srl, srlw
+    FUNCT7_SRAI    = 0b0100000, // sra, sraw
     // ...
 };
 

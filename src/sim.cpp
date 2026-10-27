@@ -221,6 +221,10 @@ Instruction simArithLogic(Instruction inst) {
                 inst.arithResult = (inst.op1Val < inst.op2Val) ? 1 : 0;
                 break;
         }
+    } else if (inst.opcode == OP_INTIMM) {
+        switch (inst.funct3) {
+            case FUNCT3_ADD
+        }
     }
     
     // Only ADDI is implemented; handle the other opcodes here
