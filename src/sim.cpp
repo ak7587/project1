@@ -73,10 +73,13 @@ Instruction simDecode(Instruction inst) {
     inst.rs2 = inst.instruction >> 20 & 0b11111;
     inst.funct7 = inst.instruction >> 25 & 0b1111111;
     inst.branchAddr = inst.instruction >> 25 & inst.instruction;
-    inst.imm_SB = (((inst.instruction >> 31 & 0b1) << 1 | (inst.instruction >> 7 & 0b1)) << 6 | (inst.instruction >> 25 & 0b111111)) << 4 | (inst.instruction >> 8 & 0b1111);
-    inst.imm_I = inst.instruction >> 20 & 0b111111111111;
-    inst.imm_UJ = (((inst.instruction >> 31 & 0b1) << 10 | (inst.instruction >> 12 & 0b1111111111)) << 1 | (inst.instruction >> 22 & 0b1)) << 8 | (inst.instruction >> 23 & 0b11111111)
-
+    uint64_t imm_I = inst.instruction >> 20 & 0b111111111111;
+    uint64_t imm_UJ = (((inst.instruction >> 31 & 0b1) << 10 | (inst.instruction >> 12 & 0b1111111111)) << 1 | (inst.instruction >> 22 & 0b1)) << 8 | (inst.instruction >> 23 & 0b11111111)
+    uint64_t imm_SB = (((inst.instruction >> 31 & 0b1) << 1 | (inst.instruction >> 7 & 0b1)) << 6 | (inst.instruction >> 25 & 0b111111)) << 4 | (inst.instruction >> 8 & 0b1111);
+    // Sign-extend the immediate values & shift the branch/jump immediates to the left by 1 bit
+    inst.imm_SB = ((imm_SB & 0x800) ? (imm_SB | 0xFFFFFFFFFFFFF000) : imm_SB) << 1;
+    inst.imm_I = (imm_I & 0x800) ? (imm_I | 0xFFFFFFFFFFFFF000) : imm_I;
+    inst.imm_UJ = ((imm_UJ & 0x80000) ? (imm_UJ | 0xFFFFFFFFFFF00000) : imm_UJ) << 1;
     inst.isLegal = true; // assume legal unless proven otherwise
 
     if (inst.instruction == 0xfeedfeed) {
