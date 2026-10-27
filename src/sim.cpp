@@ -168,18 +168,6 @@ Instruction simNextPCResolution(Instruction inst) {
                         }
                         else inst.nextPC = inst.PC;
                         break;
-                    case FUNCT3_BGEU:
-                        if (inst.rs1 >= inst.rs2) {
-                            inst.nextPC = inst.PC + inst.imm_SB;
-                        }
-                        else inst.nextPC = inst.PC;
-                        break;
-                    case FUNCT3_BGEU:
-                        if (inst.rs1 >= inst.rs2) {
-                            inst.nextPC = inst.PC + inst.imm_SB;
-                        }
-                        else inst.nextPC = inst.PC;
-                        break;
                 }
                 break;
         }
