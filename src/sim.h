@@ -40,6 +40,7 @@ enum OPCODES {
     OP_SB = 0b1100011, // bew, bne, blt, bge, bltu, bgeu
     OP_I = 0b1100111, // jalr
     OP_UJ = 0b1101111, //jal
+    OP_IMMW = 0b0011011, // addiw, slliw, srliw, sraiw
     // ...
 };
 
@@ -67,7 +68,11 @@ enum FUNCT3 {
     FUNCT3_SRLI = 0b101,
     FUNCT3_SRAI = 0b101,
     FUNCT3_ORI = 0b110,
-    FUNCT3_ANDI = 0b111
+    FUNCT3_ANDI = 0b111,
+    FUNCT3_ADDIW = 0b000,
+    FUNCT3_SLLIW = 0b001,
+    FUNCT3_SRLIW = 0b101,
+    FUNCT3_SRAIW = 0b101,
     // ...
 };
 
@@ -77,6 +82,8 @@ enum RI_FUNCT7 {
     FUNCT7_SUB     = 0b0100000, // sub, subw
     FUNCT7_SRLI    = 0b0000000, // srl, srlw
     FUNCT7_SRAI    = 0b0100000, // sra, sraw
+    FUNCT7_SRLIW   = 0b0000000, // srlw
+    FUNCT7_SRAIW   = 0b0100000, // sraw
     // ...
 };
 
