@@ -14,7 +14,7 @@ using namespace std;
 
 uint64_t sign_extend_32(uint64_t val) {
     return static_cast<int64_t>(static_cast<int32_t>(val));
-
+}
 // Initialize memory with the program binary
 bool initMemory(char *programFile, MemoryStore *myMem) {
     // Open the instruction file
@@ -253,6 +253,22 @@ Instruction simArithLogic(Instruction inst) {
                 break;
             case FUNCT3_ANDI:
                 inst.arithResult = inst.op1Val & inst.imm_I;
+                break;
+        }
+    } else if (inst.opcode == OP_IMMW) {
+        switch (inst.funct3) {
+            case FUNCT3_ADDIW:
+                inst.arithResult = sign_extend_32(inst.op1Val + inst.imm_I);
+                break;
+            case FUNCT3_SLLIW:
+                inst.arithResult = sign_extend_32(inst.op1Val << (inst.imm_I & 0x1F));
+                break;
+            case FUNCT3_SRLIW:
+                if (inst.funct7 == FUNCT7_SRAIW) {
+                    inst.arithResult = sign_extend_32(((int32_t)inst.op1Val) >> (inst.imm_I & 0x1F));
+                } else {
+                    inst.arithResult = sign_extend_32(inst.op1Val >> (inst.imm_I & 0x1F));
+                }
                 break;
         }
     }
