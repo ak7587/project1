@@ -125,6 +125,7 @@ Instruction simOperandCollection(Instruction inst, REGS regData) {
     return inst;
 }
 
+
 // Resolve the next PC: PC + 4, or a branch/jump target
 Instruction simNextPCResolution(Instruction inst) {
     if (inst.opcode == OP_SB || inst.opcode == OP_I || inst.opcode == OP_UJ) {
