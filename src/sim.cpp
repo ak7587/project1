@@ -271,6 +271,26 @@ Instruction simArithLogic(Instruction inst) {
                 }
                 break;
         }
+    } else if (inst.opcode == OP_RINT) {
+        switch (inst.funct3) {
+            case FUNCT3_ADD:
+                if (inst.funct7 == FUNCT7_SUB) {
+                    inst.arithResult = sign_extend_64(inst.op1Val - inst.op2Val);
+                } else {
+                    inst.arithResult = sign_extend_64(inst.op1Val + inst.op2Val);
+                }
+                break;
+            case FUNCT3_SLL:
+                inst.arithResult = sign_extend_64(inst.op1Val << (inst.op2Val & 0x1F));
+                break;
+            case FUNCT3_SRL:
+                if (inst.funct7 == FUNCT7_SRA) {
+                    inst.arithResult = sign_extend_64(((int64_t)inst.op1Val) >> (inst.op2Val & 0x1F));
+                } else {
+                    inst.arithResult = sign_extend_64(inst.op1Val >> (inst.op2Val & 0x1F));
+                }
+                break;
+        }
     }
     
     // Only ADDI is implemented; handle the other opcodes here
