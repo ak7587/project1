@@ -396,11 +396,9 @@ if (inst.opcode == OP_LOAD) {
                 myMem[inst.memAddress+8] << 64;
                 registers[inst.rd] = doubleword;
                 break;
-        }
+            }
         }
     }
-    }
-}
     return inst;
 }
 
