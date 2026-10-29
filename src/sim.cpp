@@ -81,11 +81,13 @@ Instruction simDecode(Instruction inst) {
     uint64_t imm_I = inst.instruction >> 20 & 0b111111111111;
     uint64_t imm_UJ = (((inst.instruction >> 31 & 0b1) << 10 | (inst.instruction >> 12 & 0b1111111111)) << 1 | (inst.instruction >> 22 & 0b1)) << 8 | (inst.instruction >> 23 & 0b11111111);
     uint64_t imm_SB = (((inst.instruction >> 31 & 0b1) << 1 | (inst.instruction >> 7 & 0b1)) << 6 | (inst.instruction >> 25 & 0b111111)) << 4 | (inst.instruction >> 8 & 0b1111);
+    uint64_t imm_U = inst.instruction >> 12 & 0b11111111111111111111;
     
     // Sign-extend the immediate values & shift the branch/jump immediates to the left by 1 bit
     inst.imm_SB = ((imm_SB & 0x800) ? (imm_SB | 0xFFFFFFFFFFFFF000) : imm_SB) << 1;
     inst.imm_I = (imm_I & 0x800) ? (imm_I | 0xFFFFFFFFFFFFF000) : imm_I;
     inst.imm_UJ = ((imm_UJ & 0x80000) ? (imm_UJ | 0xFFFFFFFFFFF00000) : imm_UJ) << 1;
+    inst.imm_U = (imm_U & 0x80000) ? (imm_U | 0xFFFFFFFFFFF00000) : imm_U;
    
     inst.isLegal = true; // assume legal unless proven otherwise
 
@@ -136,7 +138,7 @@ Instruction simNextPCResolution(Instruction inst) {
                 break;
             case OP_UJ:
                 registers[inst.rd] = inst.PC + 4;
-                inst.nextPC = inst.PC + (inst.imm_UJ << 1);
+                inst.nextPC = inst.PC + inst.imm_UJ;
                 break;
             case OP_SB:
                 switch (inst.funct3) {
@@ -292,6 +294,15 @@ Instruction simArithLogic(Instruction inst) {
                 }
                 break;
         }
+    } else if (inst.opcode == OP_LUI | inst.opcode == OP_AUIPC) {
+        switch (inst.opcode) {
+            case OP_LUI:
+                inst.arithResult = inst.imm_U << 12;
+                break;
+            case OP_AUIPC:
+                inst.arithResult = inst.PC + (inst.imm_U << 12);
+                break;
+        }
     }
     
     // Only ADDI is implemented; handle the other opcodes here
@@ -342,9 +353,11 @@ if (inst.opcode == OP_LOAD) {
             registers[inst.rd] = doubleword;
             break;
         case FUNCT3_LBU:
-
+            byte = myMem->registers[inst.memAddress];
+            registers[inst.rd] = byte;
+            break;
         case FUNCT3_LHU:
-            doubleword = myMem->registers[inst.memAddress];
+            doubleword = myMem->registers[inst.memAddress] << 8;
             registers[inst.rd] = doubleword;
             break;
         case FUNCT3_LWU:

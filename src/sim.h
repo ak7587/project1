@@ -41,6 +41,7 @@ enum OPCODES {
     OP_I = 0b1100111, // jalr
     OP_UJ = 0b1101111, //jal
     OP_IMMW = 0b0011011, // addiw, slliw, srliw, sraiw
+    OP_AUIPC = 0b0010111, // auipc
     // ...
 };
 
