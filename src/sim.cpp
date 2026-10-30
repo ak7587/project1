@@ -102,7 +102,7 @@ Instruction simDecode(Instruction inst) {
         inst.isNop = true;
         return inst; // NOP instruction
     }
-
+    inst.isLegal = false;
     switch (inst.opcode) {
         case OP_INTIMM:
             if (inst.funct3 == FUNCT3_ADD) {
@@ -113,6 +113,54 @@ Instruction simDecode(Instruction inst) {
             } else {
                 inst.isLegal = false;
             }
+            break;
+        case OP_LOAD:
+            inst.readsMem = true;
+            inst.writesRd = true;
+            inst.readsRs1 = true;
+            inst.readsRs2 = false;
+            break;
+        case OP_STORE:
+            inst.writesMem = true;
+            inst.readsRs1 = true;
+            inst.readsRs2 = true;
+            break;
+        case OP_RINT:
+            inst.doesArithLogic = true;
+            inst.writesRd = true;
+            inst.readsRs1 = true;
+            inst.readsRs2 = true;
+            break;
+        case OP_LUI:
+            inst.writesRd = true;
+            break;
+        case OP_RW:
+            inst.doesArithLogic = true;
+            inst.writesRd = true;
+            inst.readsRs1 = true;
+            inst.readsRs2 = true;
+            break;
+        case OP_SB:
+            inst.readsRs1 = true;
+            inst.readsRs2 = true;
+            break;
+        case OP_I:
+            inst.readsRs1 = true;
+            inst.writesRd = true;
+            inst.doesArithLogic = true;
+            break;
+        case OP_UJ:
+            inst.writesRd = true;
+            inst.doesArithLogic = true;
+            break;
+        case OP_IMMW:
+            inst.doesArithLogic = true;
+            inst.writesRd = true;
+            inst.readsRs1 = true;
+            inst.readsRs2 = false;
+            break;
+        case OP_AUIPC:
+            inst.writesRd = true;
             break;
         default:
             inst.isLegal = false;
@@ -135,50 +183,50 @@ Instruction simNextPCResolution(Instruction inst) {
     if (inst.opcode == OP_SB || inst.opcode == OP_I || inst.opcode == OP_UJ) {
         switch (inst.opcode) {
             case OP_I:
-                regData.registers[inst.rd] = inst.PC + 4;
+                arithResult = inst.PC + 4;
                 inst.nextPC = inst.op1Val + inst.imm_I;
                 break;
             case OP_UJ:
-                regData.registers[inst.rd] = inst.PC + 4;
+                arithResult = inst.PC + 4;
                 inst.nextPC = inst.PC + inst.imm_UJ;
                 break;
             case OP_SB:
                 switch (inst.funct3) {
                     case FUNCT3_BEQ:
-                        if (inst.rs1 == inst.rs2) {
+                        if (inst.op1Val == inst.op2Val) {
                             inst.nextPC = inst.PC + inst.imm_SB;
                         }
-                        else inst.nextPC = inst.PC;
+                        else inst.nextPC = inst.PC + 4;
                         break;
                     case FUNCT3_BGE:
-                        if (inst.rs1 >= inst.rs2) {
+                        if (inst.op1Val >= inst.op2Val) {
                             inst.nextPC = inst.PC + inst.imm_SB;
                         }
                         else inst.nextPC = inst.PC;
                         break;
                     case FUNCT3_BLT:
-                        if (inst.rs1 < inst.rs2) {
+                        if (inst.op1Val < inst.op2Val) {
                             inst.nextPC = inst.PC + inst.imm_SB;
                         }
-                        else inst.nextPC = inst.PC;
+                        else inst.nextPC = inst.PC + 4;
                         break;
                     case FUNCT3_BNE:
-                        if (inst.rs1 != inst.rs2) {
+                        if (inst.op1Val != inst.op2Val) {
                             inst.nextPC = inst.PC + inst.imm_SB;
                         }
-                        else inst.nextPC = inst.PC;
+                        else inst.nextPC = inst.PC + 4;
                         break;
                     case FUNCT3_BLTU:
-                        if (inst.rs1 < inst.rs2) {
+                        if (inst.op1Val < inst.op2Val) {
                             inst.nextPC = inst.PC + inst.imm_SB;
                         }
-                        else inst.nextPC = inst.PC;
+                        else inst.nextPC = inst.PC + 4;
                         break;
                     case FUNCT3_BGEU:
-                        if (inst.rs1 >= inst.rs2) {
+                        if (inst.op1Val >= inst.op2Val) {
                             inst.nextPC = inst.PC + inst.imm_SB;
                         }
-                        else inst.nextPC = inst.PC;
+                        else inst.nextPC = inst.PC + 4;
                         break;
                 }
                 break;
@@ -193,8 +241,6 @@ Instruction simNextPCResolution(Instruction inst) {
 
 // Perform arithmetic/logic operations
 Instruction simArithLogic(Instruction inst) {
-    inst.doesArithLogic = true;
-    inst.writesRd = true;
     if (inst.opcode == OP_RINT) {
         switch (inst.funct3) {
             case FUNCT3_ADD:
@@ -287,6 +333,26 @@ Instruction simArithLogic(Instruction inst) {
                 inst.arithResult = inst.PC + (inst.imm_U << 12);
                 break;
         }
+    } else if (inst.opcode == OP_RW) {
+        switch (inst.funct3) {
+            case FUNCT3_ADD:
+                if (inst.funct7 == FUNCT7_SUB) {
+                    inst.arithResult = sign_extend_32(inst.op1Val - inst.op2Val);
+                } else {
+                    inst.arithResult = sign_extend_32(inst.op1Val + inst.op2Val);
+                }
+                break;
+            case FUNCT3_SLL:
+                inst.arithResult = sign_extend_32(inst.op1Val << (inst.op2Val & 0x1F));
+                break;
+            case FUNCT3_SRL:
+                if (inst.funct7 == FUNCT7_SRAI) {
+                    inst.arithResult = sign_extend_32(((int32_t)inst.op1Val) >> (inst.op2Val & 0x1F));
+                } else {
+                    inst.arithResult = sign_extend_32(inst.op1Val >> (inst.op2Val & 0x1F));
+                }
+                break;
+        }
     }
 
     return inst;
@@ -307,7 +373,6 @@ Instruction simAddrGen(Instruction inst) {
 
 // Perform the memory access for load/store instructions
 Instruction simMemAccess(Instruction inst, MemoryStore *myMem) {
-    inst.readsMem = true;
 if (inst.opcode == OP_LOAD) {
     switch (inst.funct3) {
         case FUNCT3_LB_SB:
@@ -332,21 +397,20 @@ if (inst.opcode == OP_LOAD) {
             myMem->getMemValue(inst.memAddress, inst.memResult, WORD_SIZE);
             break;
     }
-    if (inst.opcode == OP_STORE) {
-        switch (inst.funct3) {
-            case FUNCT3_LB_SB:
-                myMem->setMemValue(inst.memAddress, inst.op2Val, BYTE_SIZE);
-                break;
-            case FUNCT3_LH_SH:
-                myMem->setMemValue(inst.memAddress, inst.op2Val, HALF_SIZE);
-                break;
-            case FUNCT3_LW_SW:
-                myMem->setMemValue(inst.memAddress, inst.op2Val, WORD_SIZE);
-                break;
-            case FUNCT3_LD_SD:
-                myMem->setMemValue(inst.memAddress, inst.op2Val, DOUBLE_SIZE);
-                break;
-            }
+} else if (inst.opcode == OP_STORE) {
+    switch (inst.funct3) {
+        case FUNCT3_LB_SB:
+            myMem->setMemValue(inst.memAddress, inst.op2Val, BYTE_SIZE);
+            break;
+        case FUNCT3_LH_SH:
+            myMem->setMemValue(inst.memAddress, inst.op2Val, HALF_SIZE);
+            break;
+        case FUNCT3_LW_SW:
+            myMem->setMemValue(inst.memAddress, inst.op2Val, WORD_SIZE);
+            break;
+        case FUNCT3_LD_SD:
+            myMem->setMemValue(inst.memAddress, inst.op2Val, DOUBLE_SIZE);
+            break;
         }
     }
     return inst;
@@ -363,7 +427,7 @@ Instruction simCommit(Instruction inst, REGS &regData) {
     }
 
     // regData is passed by reference, so changes here update the caller's registers
-    regData.registers[inst.rd] = inst.arithResult;
+    // regData.registers[inst.rd] = inst.arithResult;
 
     regData.registers[0] = 0;
 
