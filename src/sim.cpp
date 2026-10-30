@@ -187,7 +187,7 @@ Instruction simNextPCResolution(Instruction inst) {
                 inst.nextPC = inst.op1Val + inst.imm_I;
                 break;
             case OP_UJ:
-                arithResult = inst.PC + 4;
+                inst.arithResult = inst.PC + 4;
                 inst.nextPC = inst.PC + inst.imm_UJ;
                 break;
             case OP_SB:
