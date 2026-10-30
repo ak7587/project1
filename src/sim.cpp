@@ -104,14 +104,10 @@ Instruction simDecode(Instruction inst) {
     }
     switch (inst.opcode) {
         case OP_INTIMM:
-            if (inst.funct3 == FUNCT3_ADD) {
-                inst.doesArithLogic = true;
-                inst.writesRd = true;
-                inst.readsRs1 = true;
-                inst.readsRs2 = false;
-            } else {
-                inst.isLegal = false;
-            }
+            inst.doesArithLogic = true;
+            inst.writesRd = true;
+            inst.readsRs1 = true;
+            inst.readsRs2 = false;
             break;
         case OP_LOAD:
             inst.readsMem = true;
@@ -132,6 +128,7 @@ Instruction simDecode(Instruction inst) {
             break;
         case OP_LUI:
             inst.writesRd = true;
+            inst.doesArithLogic = true;
             break;
         case OP_RW:
             inst.doesArithLogic = true;
@@ -160,6 +157,7 @@ Instruction simDecode(Instruction inst) {
             break;
         case OP_AUIPC:
             inst.writesRd = true;
+            inst.doesArithLogic = true;
             break;
         default:
             inst.isLegal = false;
@@ -201,7 +199,7 @@ Instruction simNextPCResolution(Instruction inst) {
                         if (inst.op1Val >= inst.op2Val) {
                             inst.nextPC = inst.PC + inst.imm_SB;
                         }
-                        else inst.nextPC = inst.PC;
+                        else inst.nextPC = inst.PC + 4;
                         break;
                     case FUNCT3_BLT:
                         if (inst.op1Val < inst.op2Val) {
@@ -234,7 +232,6 @@ Instruction simNextPCResolution(Instruction inst) {
     else {
         inst.nextPC = inst.PC + 4;
     }
-
     return inst;
 }
 
