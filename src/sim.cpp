@@ -69,6 +69,7 @@ Instruction simFetch(uint64_t PC, MemoryStore *myMem) {
 
 // Decode the opcode, funct fields, and register indices, and determine which resources to use
 Instruction simDecode(Instruction inst) {
+    // parts of instruction
     inst.opcode = inst.instruction & 0b1111111;
     inst.funct3 = inst.instruction >> 12 & 0b111;
     inst.rd = inst.instruction >> 7 & 0b11111;
@@ -102,6 +103,7 @@ Instruction simDecode(Instruction inst) {
         inst.isNop = true;
         return inst; // NOP instruction
     }
+    // control boolean assignments
     switch (inst.opcode) {
         case OP_INTIMM:
             inst.doesArithLogic = true;
@@ -250,7 +252,7 @@ Instruction simArithLogic(Instruction inst) {
                 inst.arithResult = inst.op1Val << (inst.op2Val & 0x3F);
                 break;
             case FUNCT3_SRL:
-                // For SRL and SRA, we need to check the funct7 field to determine if it's a logical or arithmetic shift
+                // check the funct7 field to determine if it's a logical or arithmetic shift
                 if (inst.funct7 == FUNCT7_SUB) {
                     inst.arithResult = ((int64_t)inst.op1Val) >> (inst.op2Val & 0x3F);
                 } else {
