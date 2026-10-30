@@ -129,7 +129,7 @@ Instruction simOperandCollection(Instruction inst, REGS regData) {
 
 
 // Resolve the next PC: PC + 4, or a branch/jump target
-Instruction simNextPCResolution(Instruction inst, REGS regData) {
+Instruction simNextPCResolution(Instruction inst) {
     if (inst.opcode == OP_SB || inst.opcode == OP_I || inst.opcode == OP_UJ) {
         switch (inst.opcode) {
             case OP_I:
@@ -191,6 +191,8 @@ Instruction simNextPCResolution(Instruction inst, REGS regData) {
 
 // Perform arithmetic/logic operations
 Instruction simArithLogic(Instruction inst) {
+    doesArithLogic = True;
+    writesRd = True;
     if (inst.opcode == OP_RINT) {
         switch (inst.funct3) {
             case FUNCT3_ADD:
@@ -274,7 +276,7 @@ Instruction simArithLogic(Instruction inst) {
                 }
                 break;
         }
-    } else if (inst.opcode == OP_LUI | inst.opcode == OP_AUIPC) {
+    } else if (inst.opcode == OP_LUI || inst.opcode == OP_AUIPC) {
         switch (inst.opcode) {
             case OP_LUI:
                 inst.arithResult = inst.imm_U << 12;
@@ -290,70 +292,84 @@ Instruction simArithLogic(Instruction inst) {
 
 // Generate the memory address for load/store instructions
 Instruction simAddrGen(Instruction inst) {
-    inst.memAddress = inst.op1Val + inst.imm_I;
+    switch (inst.opcode) {
+        case OP_LOAD:
+            inst.memAddress = inst.op1Val + inst.imm_I;
+            break;
+        case OP_STORE:
+            inst.memAddress = inst.op1Val + inst.imm_S;
+            break;
+    }
     return inst;
 }
 
 // Perform the memory access for load/store instructions
-Instruction simMemAccess(Instruction inst, MemoryStore *myMem, REGS regData) {
+Instruction simMemAccess(Instruction inst, MemoryStore *myMem) {
+    readsMem = True;
     uint64_t value;
 if (inst.opcode == OP_LOAD) {
     switch (inst.funct3) {
         case FUNCT3_LB_SB:
             myMem->getMemValue(inst.memAddress, value, BYTE_SIZE);
-            regData.registers[inst.rd] = (int64_t)value;
+            inst.memResult = (int64_t)value;
             break;
         case FUNCT3_LH_SH:
             myMem->getMemValue(inst.memAddress, value, HALF_SIZE);
-            regData.registers[inst.rd] = (int64_t)value;
+            inst.memResult = (int64_t)value;
             break;
         case FUNCT3_LW_SW:
             myMem->getMemValue(inst.memAddress, value, WORD_SIZE);
-            regData.registers[inst.rd] = (int64_t)value;
+            inst.memResult = (int64_t)value;
             break;
         case FUNCT3_LD_SD:
             myMem->getMemValue(inst.memAddress, value, DOUBLE_SIZE);
-            regData.registers[inst.rd] = (int64_t)value;
+            inst.memResult = (int64_t)value;
             break;
         case FUNCT3_LBU:
             myMem->getMemValue(inst.memAddress, value, BYTE_SIZE);
-            regData.registers[inst.rd] = (int64_t)value;
+            inst.memResult = (int64_t)value;
             break;
         case FUNCT3_LHU:
             myMem->getMemValue(inst.memAddress, value, HALF_SIZE);
-            regData.registers[inst.rd] = (int64_t)value;
+            inst.memResult = (int64_t)value;
             break;
         case FUNCT3_LWU:
             myMem->getMemValue(inst.memAddress, value, WORD_SIZE);
-            regData.registers[inst.rd] = (int64_t)value;
+            inst.memResult = (int64_t)value;
             break;
     }
     if (inst.opcode == OP_STORE) {
         switch (inst.funct3) {
             case FUNCT3_LB_SB:
-                value = regData.registers[inst.rd] & 0xFF;
-                myMem->setMemValue(inst.memAddress, value, BYTE_SIZE);
+                value =  BYTE_SIZE;
                 break;
             case FUNCT3_LH_SH:
-                value = regData.registers[inst.rd] & 0xFFFF;
-                myMem->setMemValue(inst.memAddress, value, HALF_SIZE);
+                value = HALF_SIZE;
                 break;
             case FUNCT3_LW_SW:
-                value = regData.registers[inst.rd] & 0xFFFFFFFF;
-                myMem->setMemValue(inst.memAddress, value, WORD_SIZE);
+                value = WORD_SIZE;
                 break;
             case FUNCT3_LD_SD:
-                value = regData.registers[inst.rd];
-                myMem->setMemValue(inst.memAddress, value, DOUBLE_SIZE);
+                value = DOUBLE_SIZE;
                 break;
             }
         }
+        inst.size = value;
     }
     return inst;
 }
 
 // Write results back to the register file
 Instruction simCommit(Instruction inst, REGS &regData) {
+    if (inst.writesRd) {
+        if (inst.doesArithLogic) {
+            regData.registers[inst.rd] = inst.arithResult;
+        } else if (inst.opcode == OP_LOAD) {
+            regData.registers[inst.rd] = inst.memResult;
+        }
+    } else if (inst.opcode == OP_STORE) {
+        setMemValue(inst.memAddress, op2Val, size)
+    }
 
     // regData is passed by reference, so changes here update the caller's registers
     regData.registers[inst.rd] = inst.arithResult;

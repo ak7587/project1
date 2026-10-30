@@ -158,6 +158,8 @@ struct Instruction {
     uint64_t arithResult = 0;
     uint64_t memAddress = 0;
     uint64_t memResult = 0;
+
+    uint64_t size = 0;
 };
 
 // The following functions are the core of the simulator. Your task is to
