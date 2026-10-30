@@ -4,28 +4,28 @@ Please fill out this form and submit it along with your project. All fields you 
 
 ### Group
 
-- [TODO: name1, netid1 (email1)]
-- [TODO: name2, netid2 (email2)]
+- [TODO: Abhijna Kavasseri, ak7587@princeton.edu]
+- [TODO: William Robbins, wr2138@princeton.edu]
 
 ## Overview
 
 Approximately how long did it take you to complete this assignment?
 
-- [TODO: number of hours] hours
+- 14 hours
 
 How many additional test cases did you write to test your implementation?
 
-- [TODO: number of test cases] test cases
+- 0 test cases
 
 If you used other students' test cases, please acknowledge the authors below.
 
-- [TODO: list original authors of test cases you used or N/A]
+- N/A
 
 ## Challenges Encountered
 
 Did you encounter any serious problems? If yes, please describe them here (e.g., specifications were unclear).
 
-- [TODO: response]
+- No but we were confused as to why we were getting NO REF for addi, until we got help on Ed
 
 ## Additional Comments
 
@@ -39,7 +39,10 @@ Write any other comments here. In particular, if there is anything we should kee
 
 If you used generative AI for help with this project, please provide the model name and the prompt you used.
 
-- [TODO: describe how you used generate AI or N/A]
+We used AI for debugging when addi failed to ask possible problems with addi and what the instruction itself
+does but Ed was more helpful. We also saught clarification with registers purpose in RISC-V 
+and help with Git Rebase issues 
+
 
 ### Acknowledgement of Original Work
 
@@ -47,5 +50,5 @@ Please copy and sign the following student acknowledgement of original work. To 
 
 > This programming assignment represents my own work in accordance with University regulations and the course syllabus.  /s/ Ada Lovelace
 
-- [TODO: Student 1 acknowledgement]
-- [TODO: Student 2 acknowledgement]
+- /s/ Abhijna Kavasseri
+- /s/ William Robbins
