@@ -177,7 +177,7 @@ Instruction simDecode(Instruction inst);
 Instruction simOperandCollection(Instruction inst, REGS regData);
 
 // Resolve the next PC: PC + 4, or a branch/jump target
-Instruction simNextPCResolution(Instruction inst);
+Instruction simNextPCResolution(Instruction inst, REGS regData);
 
 // Perform arithmetic/logic operations
 Instruction simArithLogic(Instruction inst);
@@ -186,7 +186,7 @@ Instruction simArithLogic(Instruction inst);
 Instruction simAddrGen(Instruction inst);
 
 // Perform the memory access for load/store instructions
-Instruction simMemAccess(Instruction inst, MemoryStore *myMem);
+Instruction simMemAccess(Instruction inst, MemoryStore *myMem, REGS regData);
 
 // Write results back to the register file
 Instruction simCommit(Instruction inst, REGS &regData);
