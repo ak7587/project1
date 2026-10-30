@@ -47,7 +47,6 @@ enum OPCODES {
 
 enum FUNCT3 {
     // For integer ALU instructions
-    FUNCT3_ADD  = 0b000, // add
     FUNCT3_BEQ  = 0b000,
     FUNCT3_BNE  = 0b001,
     FUNCT3_BLT  = 0b100,
@@ -106,12 +105,6 @@ enum RI_FUNCT7 {
 // TODO: You may wish to declare some helper functions for bit extraction
 // and sign extension
 
-    /// idrkkk where to put these but makes memory stuff easier
-    uint8_t word = 0,
-   uint16_t halfword = 0m
-   uint32_t word = 0,
-   uint32_t double_word = 0;
-
 uint64_t sign_extend_32(uint64_t val);
 
 // --------------------------------------------------------------------------
@@ -157,6 +150,7 @@ struct Instruction {
     uint64_t imm_I = 0;
     uint64_t imm_UJ = 0;
     uint64_t imm_SB = 0;
+    uint64_t imm_U = 0;
 
     uint64_t op1Val = 0;
     uint64_t op2Val = 0;

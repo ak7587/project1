@@ -278,19 +278,19 @@ Instruction simArithLogic(Instruction inst) {
         switch (inst.funct3) {
             case FUNCT3_ADD:
                 if (inst.funct7 == FUNCT7_SUB) {
-                    inst.arithResult = sign_extend_64(inst.op1Val - inst.op2Val);
+                    inst.arithResult = inst.op1Val - inst.op2Val;
                 } else {
-                    inst.arithResult = sign_extend_64(inst.op1Val + inst.op2Val);
+                    inst.arithResult = inst.op1Val + inst.op2Val;
                 }
                 break;
             case FUNCT3_SLL:
-                inst.arithResult = sign_extend_64(inst.op1Val << (inst.op2Val & 0x1F));
+                inst.arithResult = inst.op1Val << (inst.op2Val & 0x1F);
                 break;
             case FUNCT3_SRL:
                 if (inst.funct7 == FUNCT7_SRA) {
-                    inst.arithResult = sign_extend_64(((int64_t)inst.op1Val) >> (inst.op2Val & 0x1F));
+                    inst.arithResult = ((int64_t)inst.op1Val) >> (inst.op2Val & 0x1F);
                 } else {
-                    inst.arithResult = sign_extend_64(inst.op1Val >> (inst.op2Val & 0x1F));
+                    inst.arithResult = inst.op1Val >> (inst.op2Val & 0x1F);
                 }
                 break;
         }
@@ -315,7 +315,7 @@ Instruction simArithLogic(Instruction inst) {
 
 // Generate the memory address for load/store instructions
 Instruction simAddrGen(Instruction inst) {
-    inst.memAddress = inst.op1Val + inst.imm;
+    inst.memAddress = inst.op1Val + inst.imm_I;
     return inst;
 }
 
@@ -336,7 +336,7 @@ if (inst.opcode == OP_LOAD) {
             myMem->getMemValue(inst.memAddress, value, WORD_SIZE);
             registers[inst.rd] = (int64_t)value;
             break;
-        case FUNCT3_LD:
+        case FUNCT3_LD_SD:
             myMem->getMemValue(inst.memAddress, value, DOUBLE_SIZE);
             registers[inst.rd] = (int64_t)value;
             break;
