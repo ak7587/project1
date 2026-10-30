@@ -89,6 +89,7 @@ Instruction simDecode(Instruction inst) {
     inst.imm_I = (imm_I & 0x800) ? (imm_I | 0xFFFFFFFFFFFFF000) : imm_I;
     inst.imm_UJ = ((imm_UJ & 0x80000) ? (imm_UJ | 0xFFFFFFFFFFF00000) : imm_UJ) << 1;
     inst.imm_U = (imm_U & 0x80000) ? (imm_U | 0xFFFFFFFFFFF00000) : imm_U;
+    inst.imm_S = ((imm_S & 0x800) ? (imm_S | 0xFFFFFFFFFFFFF000) : imm_S);
    
     inst.isLegal = true; // assume legal unless proven otherwise
 
@@ -192,8 +193,8 @@ Instruction simNextPCResolution(Instruction inst) {
 
 // Perform arithmetic/logic operations
 Instruction simArithLogic(Instruction inst) {
-    inst.doesArithLogic = True;
-    inst.writesRd = True;
+    inst.doesArithLogic = true;
+    inst.writesRd = true;
     if (inst.opcode == OP_RINT) {
         switch (inst.funct3) {
             case FUNCT3_ADD:
@@ -306,7 +307,7 @@ Instruction simAddrGen(Instruction inst) {
 
 // Perform the memory access for load/store instructions
 Instruction simMemAccess(Instruction inst, MemoryStore *myMem) {
-    inst.readsMem = True;
+    inst.readsMem = true;
     uint64_t value;
 if (inst.opcode == OP_LOAD) {
     switch (inst.funct3) {
@@ -369,7 +370,7 @@ Instruction simCommit(Instruction inst, REGS &regData) {
             regData.registers[inst.rd] = inst.memResult;
         }
     } else if (inst.opcode == OP_STORE) {
-        regData.setMemValue(inst.memAddress, inst.op2Val, inst.size);
+        myMem->setMemValue(inst.memAddress, inst.op2Val, inst.size);
     }
 
     // regData is passed by reference, so changes here update the caller's registers
