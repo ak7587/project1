@@ -41,7 +41,7 @@ enum OPCODES {
     OP_I = 0b1100111, // jalr
     OP_UJ = 0b1101111, //jal
     OP_IMMW = 0b0011011, // addiw, slliw, srliw, sraiw
-    OP_AUIPC = 0b0010111, // auipc
+    OP_AUIPC = 0b0010111 // auipc
     // ...
 };
 
@@ -74,6 +74,16 @@ enum FUNCT3 {
     FUNCT3_SLLIW = 0b001,
     FUNCT3_SRLIW = 0b101,
     FUNCT3_SRAIW = 0b101,
+    FUNCT3_ADD = 0b000,
+    FUNCT3_SUB = 0b000,
+    FUNCT3_SLL = 0b001,
+    FUNCT3_SLT = 0b010,
+    FUNCT3_SLTU = 0b011,
+    FUNCT3_XOR = 0b100,
+    FUNCT3_SRL = 0b101,
+    FUNCT3_SRA = 0b101,
+    FUNCT3_OR = 0b110,
+    FUNCT3_AND = 0b111
     // ...
 };
 
@@ -82,9 +92,9 @@ enum RI_FUNCT7 {
     FUNCT7_ADD     = 0b0000000, // add
     FUNCT7_SUB     = 0b0100000, // sub, subw
     FUNCT7_SRLI    = 0b0000000, // srl, srlw
-    FUNCT7_SRAI    = 0b0100000, // sra, sraw
+    FUNCT7_SRAI    = 0b0100000, // srai, sraiw
     FUNCT7_SRLIW   = 0b0000000, // srlw
-    FUNCT7_SRAIW   = 0b0100000, // sraw
+    FUNCT7_SRAIW   = 0b0100000 // sraw
     // ...
 };
 

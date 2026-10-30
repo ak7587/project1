@@ -321,80 +321,55 @@ Instruction simAddrGen(Instruction inst) {
 
 // Perform the memory access for load/store instructions
 Instruction simMemAccess(Instruction inst, MemoryStore *myMem) {
+    uint64_t value;
 if (inst.opcode == OP_LOAD) {
     switch (inst.funct3) {
         case FUNCT3_LB_SB:
-            byte = myMem[inst.memAddress];
-            registers[inst.rd] = byte;
+            myMem->getMemValue(inst.memAddress, value, BYTE_SIZE);
+            registers[inst.rd] = (int64_t)value;
             break;
         case FUNCT3_LH_SH:
-            halfword = myMem[inst.memAddress] |
-            myMem[inst.memAddress] << 8 ;
-            registers[inst.rd] = halfword;
+            myMem->getMemValue(inst.memAddress, value, HALF_SIZE);
+            registers[inst.rd] = (int64_t)value;
             break;
         case FUNCT3_LW_SW:
-            word = myMem[inst.memAddress] |
-                myMem[inst.memAddress+1] << 8 |
-                myMem[inst.memAddress+2] << 16 |
-                myMem[inst.memAddress+3] << 24 |
-                myMem[inst.memAddress+4] << 32 |
-            registers[inst.rd] = word;
+            myMem->getMemValue(inst.memAddress, value, WORD_SIZE);
+            registers[inst.rd] = (int64_t)value;
             break;
         case FUNCT3_LD:
-            doubleword = myMem[inst.memAddress] |
-                myMem[inst.memAddress+1] << 8 |
-                myMem[inst.memAddress+2] << 16 |
-                myMem[inst.memAddress+3] << 24 |
-                myMem[inst.memAddress+4] << 32 |
-                myMem[inst.memAddress+5] << 40 |
-                myMem[inst.memAddress+6] << 48 |
-                myMem[inst.memAddress+7] << 56 |
-                myMem[inst.memAddress+8] << 64;
-            registers[inst.rd] = doubleword;
+            myMem->getMemValue(inst.memAddress, value, DOUBLE_SIZE);
+            registers[inst.rd] = (int64_t)value;
             break;
         case FUNCT3_LBU:
-            byte = myMem->registers[inst.memAddress];
-            registers[inst.rd] = byte;
+            myMem->getMemValue(inst.memAddress, value, BYTE_SIZE);
+            registers[inst.rd] = (int64_t)value;
             break;
         case FUNCT3_LHU:
-            doubleword = myMem->registers[inst.memAddress] << 8;
-            registers[inst.rd] = doubleword;
+            myMem->getMemValue(inst.memAddress, value, HALF_SIZE);
+            registers[inst.rd] = (int64_t)value;
             break;
         case FUNCT3_LWU:
-            doubleword = myMem->registers[inst.memAddress];
-            registers[inst.rd] = doubleword;
+            myMem->getMemValue(inst.memAddress, value, WORD_SIZE);
+            registers[inst.rd] = (int64_t)value;
             break;
     }
     if (inst.opcode == OP_STORE) {
         switch (inst.funct3) {
             case FUNCT3_LB_SB:
-                byte = myMem->registers[inst.memAddress];
-                registers[inst.rd] = byte;
+                value = registers[inst.rd] & 0xFF;
+                myMem->setMemValue(inst.memAddress, value, BYTE_SIZE);
                 break;
             case FUNCT3_LH_SH:
-                halfword = myMem->registers[inst.memAddress] |
-                myMem->registers[inst.memAddress+1] << 8 ;
-                registers[inst.rd] = halfword;
+                value = registers[inst.rd] & 0xFFFF;
+                myMem->setMemValue(inst.memAddress, value, HALF_SIZE);
                 break;
             case FUNCT3_LW_SW:
-                word = myMem[inst.memAddress] |
-                myMem[inst.memAddress+1] << 8 |
-                myMem[inst.memAddress+2] << 16 |
-                myMem[inst.memAddress+3] << 24 |
-                myMem[inst.memAddress+4] << 32 |
-                registers[inst.rd] = word;
+                value = registers[inst.rd] & 0xFFFFFFFF;
+                myMem->setMemValue(inst.memAddress, value, WORD_SIZE);
                 break;
             case FUNCT3_LD_SD:
-                doubleword = myMem[inst.memAddress] |
-                myMem[inst.memAddress+1] << 8 |
-                myMem[inst.memAddress+2] << 16 |
-                myMem[inst.memAddress+3] << 24 |
-                myMem[inst.memAddress+4] << 32 |
-                myMem[inst.memAddress+5] << 40 |
-                myMem[inst.memAddress+6] << 48 |
-                myMem[inst.memAddress+7] << 56 |
-                myMem[inst.memAddress+8] << 64;
-                registers[inst.rd] = doubleword;
+                value = registers[inst.rd];
+                myMem->setMemValue(inst.memAddress, value, DOUBLE_SIZE);
                 break;
             }
         }
