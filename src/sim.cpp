@@ -79,7 +79,7 @@ Instruction simDecode(Instruction inst) {
 
     //unsigned immediates
     uint64_t imm_I = inst.instruction >> 20 & 0b111111111111;
-    uint64_t imm_UJ = (((inst.instruction >> 31 & 0b1) << 19 | (inst.instruction >> 12 & 0b1111111111)) << 1 | (inst.instruction >> 20 & 0b1)) << 8 | (inst.instruction >> 21 & 0b11111111);
+    uint64_t imm_UJ = (((inst.instruction >> 31 & 0b1) << 19 | (inst.instruction >> 21 & 0b1111111111)) << 9 | (inst.instruction >> 20 & 0b1)) << 8 | (inst.instruction >> 12 & 0b11111111);
     uint64_t imm_SB = (((inst.instruction >> 31 & 0b1) << 1 | (inst.instruction >> 7 & 0b1)) << 6 | (inst.instruction >> 25 & 0b111111)) << 4 | (inst.instruction >> 8 & 0b1111);
     uint64_t imm_U = inst.instruction >> 12 & 0b11111111111111111111;
     uint64_t imm_S = (((inst.instruction >> 25 & 0b1111111) << 5) | (inst.instruction >> 7 & 0b11111));
