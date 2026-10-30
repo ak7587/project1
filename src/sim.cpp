@@ -82,6 +82,7 @@ Instruction simDecode(Instruction inst) {
     uint64_t imm_UJ = (((inst.instruction >> 31 & 0b1) << 10 | (inst.instruction >> 12 & 0b1111111111)) << 1 | (inst.instruction >> 22 & 0b1)) << 8 | (inst.instruction >> 23 & 0b11111111);
     uint64_t imm_SB = (((inst.instruction >> 31 & 0b1) << 1 | (inst.instruction >> 7 & 0b1)) << 6 | (inst.instruction >> 25 & 0b111111)) << 4 | (inst.instruction >> 8 & 0b1111);
     uint64_t imm_U = inst.instruction >> 12 & 0b11111111111111111111;
+    uint64_t imm_S = (((inst.instruction >> 25 & 0b1111111) << 5) | (inst.instruction >> 7 & 0b11111));
     
     // Sign-extend the immediate values & shift the branch/jump immediates to the left by 1 bit
     inst.imm_SB = ((imm_SB & 0x800) ? (imm_SB | 0xFFFFFFFFFFFFF000) : imm_SB) << 1;
@@ -191,8 +192,8 @@ Instruction simNextPCResolution(Instruction inst) {
 
 // Perform arithmetic/logic operations
 Instruction simArithLogic(Instruction inst) {
-    doesArithLogic = True;
-    writesRd = True;
+    inst.doesArithLogic = True;
+    inst.writesRd = True;
     if (inst.opcode == OP_RINT) {
         switch (inst.funct3) {
             case FUNCT3_ADD:
@@ -305,7 +306,7 @@ Instruction simAddrGen(Instruction inst) {
 
 // Perform the memory access for load/store instructions
 Instruction simMemAccess(Instruction inst, MemoryStore *myMem) {
-    readsMem = True;
+    inst.readsMem = True;
     uint64_t value;
 if (inst.opcode == OP_LOAD) {
     switch (inst.funct3) {
@@ -368,7 +369,7 @@ Instruction simCommit(Instruction inst, REGS &regData) {
             regData.registers[inst.rd] = inst.memResult;
         }
     } else if (inst.opcode == OP_STORE) {
-        setMemValue(inst.memAddress, op2Val, size)
+        regData.setMemValue(inst.memAddress, inst.op2Val, inst.size);
     }
 
     // regData is passed by reference, so changes here update the caller's registers

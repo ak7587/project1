@@ -151,6 +151,7 @@ struct Instruction {
     uint64_t imm_UJ = 0;
     uint64_t imm_SB = 0;
     uint64_t imm_U = 0;
+    uint64_t imm_S = 0;
 
     uint64_t op1Val = 0;
     uint64_t op2Val = 0;
