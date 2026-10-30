@@ -308,55 +308,46 @@ Instruction simAddrGen(Instruction inst) {
 // Perform the memory access for load/store instructions
 Instruction simMemAccess(Instruction inst, MemoryStore *myMem) {
     inst.readsMem = true;
-    uint64_t value;
 if (inst.opcode == OP_LOAD) {
     switch (inst.funct3) {
         case FUNCT3_LB_SB:
-            myMem->getMemValue(inst.memAddress, value, BYTE_SIZE);
-            inst.memResult = (int64_t)value;
+            myMem->getMemValue(inst.memAddress, inst.memResult, BYTE_SIZE);
             break;
         case FUNCT3_LH_SH:
-            myMem->getMemValue(inst.memAddress, value, HALF_SIZE);
-            inst.memResult = (int64_t)value;
+            myMem->getMemValue(inst.memAddress, inst.memResult, HALF_SIZE);
             break;
         case FUNCT3_LW_SW:
-            myMem->getMemValue(inst.memAddress, value, WORD_SIZE);
-            inst.memResult = (int64_t)value;
+            myMem->getMemValue(inst.memAddress, inst.memResult, WORD_SIZE);
             break;
         case FUNCT3_LD_SD:
-            myMem->getMemValue(inst.memAddress, value, DOUBLE_SIZE);
-            inst.memResult = (int64_t)value;
+            myMem->getMemValue(inst.memAddress, inst.memResult, DOUBLE_SIZE);
             break;
         case FUNCT3_LBU:
-            myMem->getMemValue(inst.memAddress, value, BYTE_SIZE);
-            inst.memResult = (int64_t)value;
+            myMem->getMemValue(inst.memAddress, inst.memResult, BYTE_SIZE);
             break;
         case FUNCT3_LHU:
-            myMem->getMemValue(inst.memAddress, value, HALF_SIZE);
-            inst.memResult = (int64_t)value;
+            myMem->getMemValue(inst.memAddress, inst.memResult, HALF_SIZE);
             break;
         case FUNCT3_LWU:
-            myMem->getMemValue(inst.memAddress, value, WORD_SIZE);
-            inst.memResult = (int64_t)value;
+            myMem->getMemValue(inst.memAddress, inst.memResult, WORD_SIZE);
             break;
     }
     if (inst.opcode == OP_STORE) {
         switch (inst.funct3) {
             case FUNCT3_LB_SB:
-                value =  BYTE_SIZE;
+                myMem->setMemValue(inst.memAddress, inst.op2Val, BYTE_SIZE);
                 break;
             case FUNCT3_LH_SH:
-                value = HALF_SIZE;
+                myMem->setMemValue(inst.memAddress, inst.op2Val, HALF_SIZE);
                 break;
             case FUNCT3_LW_SW:
-                value = WORD_SIZE;
+                myMem->setMemValue(inst.memAddress, inst.op2Val, WORD_SIZE);
                 break;
             case FUNCT3_LD_SD:
-                value = DOUBLE_SIZE;
+                myMem->setMemValue(inst.memAddress, inst.op2Val, DOUBLE_SIZE);
                 break;
             }
         }
-        inst.size = value;
     }
     return inst;
 }
@@ -369,8 +360,6 @@ Instruction simCommit(Instruction inst, REGS &regData) {
         } else if (inst.opcode == OP_LOAD) {
             regData.registers[inst.rd] = inst.memResult;
         }
-    } else if (inst.opcode == OP_STORE) {
-        myMem->setMemValue(inst.memAddress, inst.op2Val, inst.size);
     }
 
     // regData is passed by reference, so changes here update the caller's registers
